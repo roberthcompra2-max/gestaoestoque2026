@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão ACA - Dashboard Cloud</title>
+    <title>Gestão ACA - Dashboard Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&family=Inter:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Inter:wght@400;600;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
-        .font-data { font-family: 'Roboto Mono', monospace; font-weight: 700; }
+        .font-data { font-family: 'Roboto Mono', monospace; }
         thead th { position: sticky; top: 0; background-color: #1e1b4b; color: #fbbf24; z-index: 20; padding: 14px 8px; font-size: 11px; text-transform: uppercase; }
         .desc-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
         .row-alert { background-color: #fff1f2 !important; border-left: 6px solid #e11d48; }
@@ -18,16 +18,25 @@
         @keyframes pulse-soft { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
         .btn-ano { background-color: #2563eb; transition: all 0.2s; color: white; }
         .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; font-weight: 900; transform: scale(1.05); }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+            .no-print { display: none !important; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid black !important; padding: 6px; font-size: 10px; }
+        }
     </style>
 </head>
 <body class="bg-slate-100 pb-10">
 
-    <header class="bg-indigo-950 text-white p-4 sticky top-0 z-50 shadow-xl border-b-4 border-amber-500">
+    <header class="bg-indigo-950 text-white p-4 sticky top-0 z-50 shadow-xl border-b-4 border-amber-500 no-print">
         <div class="max-w-full mx-auto flex flex-col gap-3">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-xl font-black uppercase tracking-tighter text-amber-400 italic">Gestão ACA</h1>
-                    <p id="countLabel" class="text-[10px] font-bold text-indigo-300 uppercase italic tracking-widest text-emerald-400">Sincronizando...</p>
+                    <h1 class="text-xl font-black uppercase tracking-tighter text-amber-400 italic leading-none">Gestão ACA</h1>
+                    <p id="countLabel" class="text-[10px] font-bold text-indigo-300 uppercase mt-1">Sincronizado</p>
                 </div>
                 <label class="bg-amber-500 text-indigo-950 px-5 py-2 rounded-xl cursor-pointer font-black text-xs uppercase active:scale-95 shadow-lg">
                     ATUALIZAR TXT
@@ -35,26 +44,38 @@
                 </label>
             </div>
 
-            <div id="statsContainer" class="bg-indigo-900/40 p-3 rounded-xl border border-indigo-800 my-1 hidden">
+            <div id="statsContainer" class="bg-black/20 p-3 rounded-2xl border border-white/10 hidden shadow-inner">
                 <div class="flex justify-between text-[10px] font-black uppercase mb-1">
-                    <span class="text-amber-400 italic">Distribuição de Estoque</span>
+                    <span class="text-amber-400">Distribuição</span>
                     <span id="percentLabel" class="text-emerald-400">0% na Loja</span>
                 </div>
-                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden flex shadow-inner">
-                    <div id="barLoja" class="bg-emerald-500 h-full transition-all duration-700 shadow-[0_0_10px_rgba(16,185,129,0.5)]" style="width: 0%"></div>
+                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden flex mb-3">
+                    <div id="barLoja" class="bg-emerald-500 h-full transition-all duration-700" style="width: 0%"></div>
                     <div id="barDep" class="bg-amber-500 h-full transition-all duration-700" style="width: 0%"></div>
                 </div>
-                <div class="flex justify-between text-[9px] mt-1 font-bold italic tracking-tight">
-                    <span id="txtLoja" class="text-emerald-300">LOJA: 0</span>
-                    <span id="txtDep" class="text-amber-300 text-right">DEP: 0</span>
+                <div class="flex items-stretch gap-2">
+                    <div class="flex-1 bg-emerald-950/40 rounded-xl p-2 text-center border border-emerald-800/30">
+                        <p class="text-[8px] text-emerald-400 font-black uppercase">Loja</p>
+                        <p id="txtLojaPeças" class="text-sm font-bold text-white">0</p>
+                    </div>
+                    <div class="flex-[2] bg-indigo-900/60 rounded-xl p-2 text-center border border-indigo-700/50">
+                        <div class="mb-1 border-b border-white/10 pb-1">
+                            <p class="text-[8px] text-indigo-300 font-black uppercase">Volume Total</p>
+                            <p id="txtTotalPeças" class="text-sm font-black text-white">0</p>
+                        </div>
+                        <p class="text-[8px] text-indigo-300 font-black uppercase">Valor em Estoque</p>
+                        <p id="txtValorTotal" class="text-xs font-black text-amber-400 italic">R$ 0,00</p>
+                    </div>
+                    <div class="flex-1 bg-amber-950/40 rounded-xl p-2 text-center border border-amber-800/30">
+                        <p class="text-[8px] text-amber-400 font-black uppercase">Depósito</p>
+                        <p id="txtDepPeças" class="text-sm font-bold text-white">0</p>
+                    </div>
                 </div>
             </div>
             
             <div class="flex gap-2">
-                <input type="text" id="searchInput" placeholder="Ex: camisa uv 25..." class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white placeholder-indigo-300 outline-none text-base font-bold shadow-inner" />
-                <select id="minEstoque" onchange="aplicarFiltros()" class="bg-indigo-800 text-amber-400 text-xs font-black rounded-xl px-2 outline-none border border-indigo-700 w-24 text-center">
-                    <option value="0">TODOS</option>
-                </select>
+                <input type="text" id="searchInput" oninput="aplicarFiltros()" placeholder="Busca inteligente (ex: uv azul 25)..." class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white font-bold outline-none placeholder:text-indigo-400" />
+                <button onclick="gerarRelatorioImpressao()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg border-b-4 border-emerald-800 active:border-0 transition-all">🖨️ PDF ALFABÉTICO</button>
             </div>
             
             <div class="flex gap-2">
@@ -66,7 +87,7 @@
         </div>
     </header>
 
-    <div class="overflow-x-auto shadow-2xl bg-white">
+    <div class="overflow-x-auto shadow-2xl bg-white no-print">
         <table class="min-w-full border-collapse">
             <thead>
                 <tr>
@@ -75,15 +96,39 @@
                     <th class="text-center">DEP.</th>
                     <th class="text-center">LOJA</th>
                     <th class="text-center">TOTAL</th>
-                    <th class="text-right px-4">VALOR</th>
+                    <th class="text-right px-4">VALOR (SUB)</th>
                 </tr>
             </thead>
             <tbody id="tableBody" class="text-slate-800 text-sm font-data"></tbody>
         </table>
     </div>
 
+    <div id="printArea" class="hidden p-6">
+        <div class="flex justify-between items-end border-b-4 border-black pb-2 mb-4">
+            <div>
+                <h1 class="text-xl font-black uppercase italic">ACA - LISTA DE REPOSIÇÃO (A-Z)</h1>
+                <p id="printInfo" class="text-[10px] font-bold uppercase"></p>
+            </div>
+            <div class="text-right text-[9px] font-bold">
+                GERADO EM: <span id="printDate"></span>
+            </div>
+        </div>
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="text-left p-1">NCE</th>
+                    <th class="text-left p-1">DESCRIÇÃO</th>
+                    <th class="text-center p-1">DEP.</th>
+                    <th class="text-center p-1">LOJA</th>
+                    <th class="text-center p-1">TOTAL</th>
+                    <th class="text-center p-1 w-10">VISTO</th>
+                </tr>
+            </thead>
+            <tbody id="printTableBody"></tbody>
+        </table>
+    </div>
+
     <script>
-        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDcaHwJbY9gT4QUi5S8xBYLAQZhBaqjPhg",
             authDomain: "gestaoestoque-85694.firebaseapp.com",
@@ -93,55 +138,13 @@
             messagingSenderId: "147675200624",
             appId: "1:147675200624:web:9552d9d8abf2914f4448b5"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
-        const fileInput = document.getElementById('fileInput');
-        const searchInput = document.getElementById('searchInput');
-        const minEstoque = document.getElementById('minEstoque');
-        const tableBody = document.getElementById('tableBody');
-        const countLabel = document.getElementById('countLabel');
-        
-        // Elementos do Painel de Stats
-        const statsContainer = document.getElementById('statsContainer');
-        const barLoja = document.getElementById('barLoja');
-        const barDep = document.getElementById('barDep');
-        const percentLabel = document.getElementById('percentLabel');
-        const txtLoja = document.getElementById('txtLoja');
-        const txtDep = document.getElementById('txtDep');
 
         let dadosEstoque = [];
         let anoAtivo = null;
 
-        for(let i=1; i<=12; i++){
-            let opt = document.createElement('option');
-            opt.value = i; opt.textContent = i + "+";
-            minEstoque.appendChild(opt);
-        }
-
-        function monitorarNuvem() {
-            db.ref('estoque_aca/itens').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    dadosEstoque = data;
-                    aplicarFiltros();
-                } else {
-                    countLabel.textContent = "⚠️ NUVEM VAZIA";
-                }
-            });
-        }
-
-        function salvarNaNuvem(lista) {
-            if(confirm("Deseja atualizar o estoque na nuvem para toda a loja?")) {
-                db.ref('estoque_aca').set({
-                    ultimaAtualizacao: new Date().toLocaleString(),
-                    itens: lista
-                }).then(() => alert("✅ Estoque atualizado com sucesso!"));
-            }
-        }
-
-        fileInput.addEventListener('change', function(e) {
+        document.getElementById('fileInput').addEventListener('change', function(e) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const lines = event.target.result.split('\n');
@@ -150,105 +153,136 @@
                     if (line.trim().startsWith('2') && line.includes('.00')) {
                         const matches = line.match(/(-?\d+\.\d{2})/g);
                         const partes = line.trim().split(/\s+/);
-                        const nce = partes[2]; 
-                        const inicioDesc = line.indexOf(nce) + nce.length;
-                        const fimDesc = line.indexOf(matches[0]);
-                        const desc = line.substring(inicioDesc, fimDesc).trim();
-                        if (nce && desc && matches && matches.length >= 4) {
-                            const dep = Math.floor(parseFloat(matches[0]));
-                            const loja = Math.floor(parseFloat(matches[1]));
-                            const total = Math.floor(parseFloat(matches[2]));
-                            const precisaAtencao = (loja < (total * 0.7)) && (dep > 0);
-                            temporario.push({ nce, desc, dep, loja, total, valor: matches[3], alerta: precisaAtencao });
+                        const nce = partes[2];
+                        if (nce && matches && matches.length >= 4) {
+                            const d = parseInt(Math.floor(parseFloat(matches[0])));
+                            const l = parseInt(Math.floor(parseFloat(matches[1])));
+                            const t = parseInt(Math.floor(parseFloat(matches[2])));
+                            const u = parseFloat(matches[3]);
+                            const desc = line.substring(line.indexOf(nce)+nce.length, line.indexOf(matches[0])).trim();
+                            let alerta = (t > 1) && (l < (t * 0.7)) && (d > 0);
+                            temporario.push({ nce, desc, dep: d, loja: l, total: t, unitario: u, subtotal: t*u, alerta });
                         }
                     }
                 });
-                salvarNaNuvem(temporario);
+                if(confirm("Deseja salvar na nuvem?")) {
+                    db.ref('estoque_aca').set({ ultimaAtualizacao: new Date().toLocaleString(), itens: temporario });
+                }
             };
             reader.readAsText(e.target.files[0]);
         });
 
+        function monitorarNuvem() {
+            db.ref('estoque_aca/itens').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) { dadosEstoque = data; aplicarFiltros(); }
+            });
+        }
+
+        function aplicarFiltros() {
+            const valorBusca = document.getElementById('searchInput').value.toLowerCase().trim();
+            const termosBusca = valorBusca.split(" ").filter(t => t.length > 0);
+            
+            let filtrados = dadosEstoque.filter(item => {
+                const textoCompleto = (item.desc + " " + item.nce).toLowerCase();
+                const matchBusca = termosBusca.every(termo => textoCompleto.includes(termo));
+                const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
+                return matchBusca && matchAno;
+            });
+
+            // Tela principal mantém ordem: Alerta -> Maior Volume
+            filtrados.sort((a, b) => {
+                if (a.alerta !== b.alerta) return b.alerta - a.alerta;
+                return b.total - a.total;
+            });
+
+            atualizarDashboard(filtrados);
+            renderTable(filtrados);
+        }
+
+        function atualizarDashboard(lista) {
+            let sL = 0, sD = 0, sT = 0, sF = 0;
+            lista.forEach(i => { sL += i.loja; sD += i.dep; sT += i.total; sF += i.subtotal; });
+            if (sT > 0) {
+                document.getElementById('statsContainer').classList.remove('hidden');
+                document.getElementById('barLoja').style.width = ((sL/sT)*100) + "%";
+                document.getElementById('barDep').style.width = ((sD/sT)*100) + "%";
+                document.getElementById('percentLabel').textContent = ((sL/sT)*100).toFixed(1) + "% NA LOJA";
+                document.getElementById('txtTotalPeças').textContent = sT.toLocaleString();
+                document.getElementById('txtLojaPeças').textContent = sL.toLocaleString();
+                document.getElementById('txtDepPeças').textContent = sD.toLocaleString();
+                document.getElementById('txtValorTotal').textContent = sF.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            }
+            document.getElementById('countLabel').textContent = `🚨 ${lista.filter(x=>x.alerta).length} ALERTAS | 📦 ${lista.length} ITENS`;
+        }
+
+        function renderTable(lista) {
+            const body = document.getElementById('tableBody');
+            body.innerHTML = '';
+            lista.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = item.alerta ? "row-alert border-b" : "border-b";
+                tr.innerHTML = `
+                    <td class="px-4 py-4 font-bold text-indigo-900">${item.nce}</td>
+                    <td class="py-4 uppercase text-[11px] font-bold leading-tight">${item.desc} ${item.alerta ? '<br><span class="badge-alert">REPOSIÇÃO</span>' : ''}</td>
+                    <td class="text-center font-bold text-slate-500">${item.dep}</td>
+                    <td class="text-center font-bold text-slate-900">${item.loja}</td>
+                    <td class="text-center bg-blue-50 text-xl font-black text-blue-900 border-x border-slate-100">${item.total}</td>
+                    <td class="px-4 text-right">
+                        <div class="font-bold text-slate-900">R$ ${item.unitario.toFixed(2)}</div>
+                        <div class="text-[9px] text-indigo-600 font-black">Sub: R$ ${item.subtotal.toFixed(2)}</div>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function gerarRelatorioImpressao() {
+            const valorBusca = document.getElementById('searchInput').value.toLowerCase().trim();
+            const termosBusca = valorBusca.split(" ").filter(t => t.length > 0);
+            
+            const listaRepor = dadosEstoque.filter(item => {
+                const textoCompleto = (item.desc + " " + item.nce).toLowerCase();
+                const matchBusca = termosBusca.every(termo => textoCompleto.includes(termo));
+                const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
+                return item.alerta && matchBusca && matchAno;
+            });
+
+            // NOVIDADE: ORDEM ALFABÉTICA (A-Z) NO PDF
+            listaRepor.sort((a, b) => a.desc.localeCompare(b.desc));
+
+            if(listaRepor.length === 0) return alert("Não há itens de reposição!");
+            
+            const pBody = document.getElementById('printTableBody');
+            pBody.innerHTML = '';
+            document.getElementById('printDate').textContent = new Date().toLocaleString();
+            document.getElementById('printInfo').textContent = `ORDEM ALFABÉTICA | TOTAL: ${listaRepor.length} ITENS`;
+            
+            listaRepor.forEach(i => {
+                pBody.innerHTML += `
+                    <tr>
+                        <td class="font-bold p-1 border border-black">${i.nce}</td>
+                        <td class="uppercase text-[9px] p-1 border border-black">${i.desc}</td>
+                        <td class="text-center font-bold p-1 border border-black">${i.dep}</td>
+                        <td class="text-center p-1 border border-black">${i.loja}</td>
+                        <td class="text-center font-black p-1 border border-black">${i.total}</td>
+                        <td class="border border-black"></td>
+                    </tr>`;
+            });
+            window.print();
+        }
+
         function filtrarAno(ano, btn) {
             document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
             btn.classList.add('btn-active');
-            anoAtivo = ano;
-            aplicarFiltros();
+            anoAtivo = ano; aplicarFiltros();
         }
 
         function limparFiltros() {
             document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
-            anoAtivo = null; searchInput.value = ''; minEstoque.value = "0";
-            aplicarFiltros();
+            anoAtivo = null; document.getElementById('searchInput').value = ''; aplicarFiltros();
         }
 
-        function aplicarFiltros() {
-            let filtrados = [...dadosEstoque];
-            const termoBusca = searchInput.value.toLowerCase().trim();
-            const min = parseInt(minEstoque.value);
-
-            if (min > 0) filtrados = filtrados.filter(i => i.total >= min);
-            if (termoBusca) {
-                const termos = termoBusca.split(" ");
-                filtrados = filtrados.filter(item => {
-                    const textoItem = (item.desc + " " + item.nce).toLowerCase();
-                    return termos.every(t => textoItem.includes(t));
-                });
-            }
-            if (anoAtivo) filtrados = filtrados.filter(i => i.desc.includes('/' + anoAtivo));
-
-            // CÁLCULO DE DASHBOARD
-            let somatorioLoja = 0;
-            let somatorioDep = 0;
-            let somatorioTotal = 0;
-
-            filtrados.forEach(item => {
-                somatorioLoja += item.loja;
-                somatorioDep += item.dep;
-                somatorioTotal += item.total;
-            });
-
-            if (somatorioTotal > 0) {
-                statsContainer.classList.remove('hidden');
-                const pLoja = ((somatorioLoja / somatorioTotal) * 100).toFixed(1);
-                const pDep = (100 - pLoja).toFixed(1);
-                
-                barLoja.style.width = pLoja + "%";
-                barDep.style.width = pDep + "%";
-                percentLabel.textContent = `${pLoja}% NA LOJA`;
-                txtLoja.textContent = `LOJA: ${somatorioLoja.toLocaleString()}`;
-                txtDep.textContent = `DEP: ${somatorioDep.toLocaleString()}`;
-            } else {
-                statsContainer.classList.add('hidden');
-            }
-
-            filtrados.sort((a, b) => (b.alerta - a.alerta) || (b.total - a.total));
-            renderTable(filtrados);
-            const alertas = filtrados.filter(x => x.alerta).length;
-            countLabel.textContent = `🚨 ${alertas} ALERTAS | 📦 ${filtrados.length} ITENS`;
-        }
-
-        function renderTable(lista) {
-            tableBody.innerHTML = '';
-            lista.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = item.alerta ? "row-alert border-b border-red-100" : "border-b border-slate-200";
-                const corTotal = item.total > 0 ? 'bg-blue-50 text-blue-800' : 'bg-red-50 text-red-700';
-                tr.innerHTML = `
-                    <td class="px-4 py-4 text-indigo-900">
-                        ${item.alerta ? '<span class="badge-alert mb-1">Atenção!</span>' : ''}
-                        <div class="text-[11px] font-black">${item.nce}</div>
-                    </td>
-                    <td class="py-4 uppercase desc-cell text-[11px] leading-tight text-slate-700">${item.desc}</td>
-                    <td class="px-2 py-4 text-center text-slate-500 text-base font-medium">${item.dep}</td>
-                    <td class="px-2 py-4 text-center text-slate-950 text-base font-black">${item.loja}</td>
-                    <td class="px-2 py-4 text-center ${corTotal} text-xl font-black border-x border-slate-200/60">${item.total}</td>
-                    <td class="px-4 py-4 text-right font-bold text-slate-900 text-base">R$ ${item.valor}</td>
-                `;
-                tableBody.appendChild(tr);
-            });
-        }
-
-        searchInput.addEventListener('input', aplicarFiltros);
         window.onload = monitorarNuvem;
     </script>
 </body>
