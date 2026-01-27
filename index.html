@@ -3,46 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão ACA - Oficial Cloud</title>
+    <title>Gestão ACA - Dashboard Cloud</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;700&family=Inter:wght@400;600;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
         .font-data { font-family: 'Roboto Mono', monospace; font-weight: 700; }
-        
-        thead th { 
-            position: sticky; top: 0; background-color: #1e1b4b; color: #fbbf24;
-            z-index: 20; padding: 14px 8px; font-size: 11px; text-transform: uppercase;
-        }
-
-        .desc-cell { 
-            max-width: 250px; overflow: hidden; text-overflow: ellipsis; 
-            white-space: nowrap; font-weight: 600;
-        }
-
-        /* Efeito Atenção Pulsante Suave */
+        thead th { position: sticky; top: 0; background-color: #1e1b4b; color: #fbbf24; z-index: 20; padding: 14px 8px; font-size: 11px; text-transform: uppercase; }
+        .desc-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
         .row-alert { background-color: #fff1f2 !important; border-left: 6px solid #e11d48; }
-        .badge-alert { 
-            background-color: #e11d48; color: white; padding: 2px 6px; 
-            border-radius: 4px; font-size: 10px; font-weight: 900; 
-            display: inline-block; animation: pulse-soft 3s infinite;
-        }
-        
-        @keyframes pulse-soft {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.02); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-
+        .badge-alert { background-color: #e11d48; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; display: inline-block; animation: pulse-soft 3s infinite; }
+        @keyframes pulse-soft { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
         .btn-ano { background-color: #2563eb; transition: all 0.2s; color: white; }
-        .btn-active { 
-            background-color: #fbbf24 !important; color: #1e1b4b !important; 
-            font-weight: 900; transform: scale(1.05);
-        }
+        .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; font-weight: 900; transform: scale(1.05); }
     </style>
 </head>
 <body class="bg-slate-100 pb-10">
@@ -59,13 +34,27 @@
                     <input type="file" id="fileInput" accept=".txt" class="hidden" />
                 </label>
             </div>
+
+            <div id="statsContainer" class="bg-indigo-900/40 p-3 rounded-xl border border-indigo-800 my-1 hidden">
+                <div class="flex justify-between text-[10px] font-black uppercase mb-1">
+                    <span class="text-amber-400 italic">Distribuição de Estoque</span>
+                    <span id="percentLabel" class="text-emerald-400">0% na Loja</span>
+                </div>
+                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden flex shadow-inner">
+                    <div id="barLoja" class="bg-emerald-500 h-full transition-all duration-700 shadow-[0_0_10px_rgba(16,185,129,0.5)]" style="width: 0%"></div>
+                    <div id="barDep" class="bg-amber-500 h-full transition-all duration-700" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[9px] mt-1 font-bold italic tracking-tight">
+                    <span id="txtLoja" class="text-emerald-300">LOJA: 0</span>
+                    <span id="txtDep" class="text-amber-300 text-right">DEP: 0</span>
+                </div>
+            </div>
             
             <div class="flex gap-2">
                 <input type="text" id="searchInput" placeholder="Ex: camisa uv 25..." class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white placeholder-indigo-300 outline-none text-base font-bold shadow-inner" />
-                
                 <select id="minEstoque" onchange="aplicarFiltros()" class="bg-indigo-800 text-amber-400 text-xs font-black rounded-xl px-2 outline-none border border-indigo-700 w-24 text-center">
                     <option value="0">TODOS</option>
-                    </select>
+                </select>
             </div>
             
             <div class="flex gap-2">
@@ -94,7 +83,7 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE (Suas chaves aplicadas)
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyDcaHwJbY9gT4QUi5S8xBYLAQZhBaqjPhg",
             authDomain: "gestaoestoque-85694.firebaseapp.com",
@@ -113,33 +102,36 @@
         const minEstoque = document.getElementById('minEstoque');
         const tableBody = document.getElementById('tableBody');
         const countLabel = document.getElementById('countLabel');
+        
+        // Elementos do Painel de Stats
+        const statsContainer = document.getElementById('statsContainer');
+        const barLoja = document.getElementById('barLoja');
+        const barDep = document.getElementById('barDep');
+        const percentLabel = document.getElementById('percentLabel');
+        const txtLoja = document.getElementById('txtLoja');
+        const txtDep = document.getElementById('txtDep');
+
         let dadosEstoque = [];
         let anoAtivo = null;
 
-        // Criar opções de 1 a 12 no seletor
         for(let i=1; i<=12; i++){
             let opt = document.createElement('option');
             opt.value = i; opt.textContent = i + "+";
             minEstoque.appendChild(opt);
         }
 
-        // --- FUNÇÕES DE NUVEM ---
-
-        // Escuta mudanças no banco (Tempo Real)
         function monitorarNuvem() {
             db.ref('estoque_aca/itens').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     dadosEstoque = data;
                     aplicarFiltros();
-                    console.log("Dados recebidos da nuvem.");
                 } else {
                     countLabel.textContent = "⚠️ NUVEM VAZIA";
                 }
             });
         }
 
-        // Salva os dados processados no Firebase
         function salvarNaNuvem(lista) {
             if(confirm("Deseja atualizar o estoque na nuvem para toda a loja?")) {
                 db.ref('estoque_aca').set({
@@ -149,14 +141,11 @@
             }
         }
 
-        // --- LÓGICA DO ARQUIVO ---
-
         fileInput.addEventListener('change', function(e) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const lines = event.target.result.split('\n');
                 let temporario = [];
-
                 lines.forEach(line => {
                     if (line.trim().startsWith('2') && line.includes('.00')) {
                         const matches = line.match(/(-?\d+\.\d{2})/g);
@@ -165,18 +154,12 @@
                         const inicioDesc = line.indexOf(nce) + nce.length;
                         const fimDesc = line.indexOf(matches[0]);
                         const desc = line.substring(inicioDesc, fimDesc).trim();
-
                         if (nce && desc && matches && matches.length >= 4) {
                             const dep = Math.floor(parseFloat(matches[0]));
                             const loja = Math.floor(parseFloat(matches[1]));
                             const total = Math.floor(parseFloat(matches[2]));
                             const precisaAtencao = (loja < (total * 0.7)) && (dep > 0);
-
-                            temporario.push({
-                                nce, desc, dep, loja, total,
-                                valor: matches[3],
-                                alerta: precisaAtencao
-                            });
+                            temporario.push({ nce, desc, dep, loja, total, valor: matches[3], alerta: precisaAtencao });
                         }
                     }
                 });
@@ -184,8 +167,6 @@
             };
             reader.readAsText(e.target.files[0]);
         });
-
-        // --- FILTROS ---
 
         function filtrarAno(ano, btn) {
             document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
@@ -206,7 +187,6 @@
             const min = parseInt(minEstoque.value);
 
             if (min > 0) filtrados = filtrados.filter(i => i.total >= min);
-
             if (termoBusca) {
                 const termos = termoBusca.split(" ");
                 filtrados = filtrados.filter(item => {
@@ -214,13 +194,34 @@
                     return termos.every(t => textoItem.includes(t));
                 });
             }
+            if (anoAtivo) filtrados = filtrados.filter(i => i.desc.includes('/' + anoAtivo));
 
-            if (anoAtivo) {
-                filtrados = filtrados.filter(i => i.desc.includes('/' + anoAtivo));
+            // CÁLCULO DE DASHBOARD
+            let somatorioLoja = 0;
+            let somatorioDep = 0;
+            let somatorioTotal = 0;
+
+            filtrados.forEach(item => {
+                somatorioLoja += item.loja;
+                somatorioDep += item.dep;
+                somatorioTotal += item.total;
+            });
+
+            if (somatorioTotal > 0) {
+                statsContainer.classList.remove('hidden');
+                const pLoja = ((somatorioLoja / somatorioTotal) * 100).toFixed(1);
+                const pDep = (100 - pLoja).toFixed(1);
+                
+                barLoja.style.width = pLoja + "%";
+                barDep.style.width = pDep + "%";
+                percentLabel.textContent = `${pLoja}% NA LOJA`;
+                txtLoja.textContent = `LOJA: ${somatorioLoja.toLocaleString()}`;
+                txtDep.textContent = `DEP: ${somatorioDep.toLocaleString()}`;
+            } else {
+                statsContainer.classList.add('hidden');
             }
 
             filtrados.sort((a, b) => (b.alerta - a.alerta) || (b.total - a.total));
-
             renderTable(filtrados);
             const alertas = filtrados.filter(x => x.alerta).length;
             countLabel.textContent = `🚨 ${alertas} ALERTAS | 📦 ${filtrados.length} ITENS`;
@@ -232,7 +233,6 @@
                 const tr = document.createElement('tr');
                 tr.className = item.alerta ? "row-alert border-b border-red-100" : "border-b border-slate-200";
                 const corTotal = item.total > 0 ? 'bg-blue-50 text-blue-800' : 'bg-red-50 text-red-700';
-
                 tr.innerHTML = `
                     <td class="px-4 py-4 text-indigo-900">
                         ${item.alerta ? '<span class="badge-alert mb-1">Atenção!</span>' : ''}
