@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão ACA - Dashboard Pro</title>
+    <title>Gestão ACA - Dashboard Cloud</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -12,12 +12,12 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
         .font-data { font-family: 'Roboto Mono', monospace; }
         thead th { position: sticky; top: 0; background-color: #1e1b4b; color: #fbbf24; z-index: 20; padding: 14px 8px; font-size: 11px; text-transform: uppercase; }
-        .desc-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
         .row-alert { background-color: #fff1f2 !important; border-left: 6px solid #e11d48; }
         .badge-alert { background-color: #e11d48; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; display: inline-block; animation: pulse-soft 3s infinite; }
         @keyframes pulse-soft { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
-        .btn-ano { background-color: #2563eb; transition: all 0.2s; color: white; }
-        .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; font-weight: 900; transform: scale(1.05); }
+        .btn-filter { background-color: #2563eb; color: white; transition: all 0.2s; border-bottom: 3px solid #1e3a8a; }
+        .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; border-bottom: 3px solid #b45309 !important; font-weight: 900; transform: translateY(1px); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         
         @media print {
             body * { visibility: hidden; }
@@ -38,56 +38,67 @@
                     <h1 class="text-xl font-black uppercase tracking-tighter text-amber-400 italic leading-none">Gestão ACA</h1>
                     <p id="countLabel" class="text-[10px] font-bold text-indigo-300 uppercase mt-1">Sincronizado</p>
                 </div>
-                <label class="bg-amber-500 text-indigo-950 px-5 py-2 rounded-xl cursor-pointer font-black text-xs uppercase active:scale-95 shadow-lg">
+                <label class="bg-amber-500 text-indigo-950 px-5 py-2 rounded-xl cursor-pointer font-black text-xs uppercase shadow-lg">
                     ATUALIZAR TXT
                     <input type="file" id="fileInput" accept=".txt" class="hidden" />
                 </label>
             </div>
 
-            <div id="statsContainer" class="bg-black/20 p-3 rounded-2xl border border-white/10 hidden shadow-inner">
+            <div id="statsContainer" class="bg-black/20 p-3 rounded-2xl border border-white/10 hidden">
                 <div class="flex justify-between text-[10px] font-black uppercase mb-1">
                     <span class="text-amber-400">Distribuição</span>
                     <span id="percentLabel" class="text-emerald-400">0% na Loja</span>
                 </div>
                 <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden flex mb-3">
-                    <div id="barLoja" class="bg-emerald-500 h-full transition-all duration-700" style="width: 0%"></div>
-                    <div id="barDep" class="bg-amber-500 h-full transition-all duration-700" style="width: 0%"></div>
+                    <div id="barLoja" class="bg-emerald-500 h-full transition-all duration-700"></div>
+                    <div id="barDep" class="bg-amber-500 h-full transition-all duration-700"></div>
                 </div>
-                <div class="flex items-stretch gap-2">
-                    <div class="flex-1 bg-emerald-950/40 rounded-xl p-2 text-center border border-emerald-800/30">
-                        <p class="text-[8px] text-emerald-400 font-black uppercase">Loja</p>
-                        <p id="txtLojaPeças" class="text-sm font-bold text-white">0</p>
+                <div class="flex items-stretch gap-2 text-center">
+                    <div class="flex-1 bg-emerald-950/40 rounded-xl p-2 border border-emerald-800/30">
+                        <p class="text-[8px] text-emerald-400 font-black">LOJA</p>
+                        <p id="txtLojaPeças" class="text-sm font-bold">0</p>
                     </div>
-                    <div class="flex-[2] bg-indigo-900/60 rounded-xl p-2 text-center border border-indigo-700/50">
-                        <div class="mb-1 border-b border-white/10 pb-1">
-                            <p class="text-[8px] text-indigo-300 font-black uppercase">Volume Total</p>
-                            <p id="txtTotalPeças" class="text-sm font-black text-white">0</p>
-                        </div>
-                        <p class="text-[8px] text-indigo-300 font-black uppercase">Valor em Estoque</p>
-                        <p id="txtValorTotal" class="text-xs font-black text-amber-400 italic">R$ 0,00</p>
+                    <div class="flex-[2] bg-indigo-900/60 rounded-xl p-2 border border-indigo-700/50">
+                        <p class="text-[8px] text-indigo-300 font-black">TOTAL / VALOR</p>
+                        <p id="txtTotalPeças" class="text-sm font-black">0</p>
+                        <p id="txtValorTotal" class="text-xs font-black text-amber-400">R$ 0,00</p>
                     </div>
-                    <div class="flex-1 bg-amber-950/40 rounded-xl p-2 text-center border border-amber-800/30">
-                        <p class="text-[8px] text-amber-400 font-black uppercase">Depósito</p>
-                        <p id="txtDepPeças" class="text-sm font-bold text-white">0</p>
+                    <div class="flex-1 bg-amber-950/40 rounded-xl p-2 border border-amber-800/30">
+                        <p class="text-[8px] text-amber-400 font-black">DEPÓSITO</p>
+                        <p id="txtDepPeças" class="text-sm font-bold">0</p>
                     </div>
                 </div>
             </div>
             
             <div class="flex gap-2">
-                <input type="text" id="searchInput" oninput="aplicarFiltros()" placeholder="Busca inteligente (ex: uv azul 25)..." class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white font-bold outline-none placeholder:text-indigo-400" />
-                <button onclick="gerarRelatorioImpressao()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg border-b-4 border-emerald-800 active:border-0 transition-all">🖨️ PDF ALFABÉTICO</button>
+                <input type="text" id="searchInput" oninput="aplicarFiltros()" placeholder="Busca inteligente..." class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white font-bold outline-none" />
+                <button onclick="gerarRelatorioImpressao()" class="bg-emerald-600 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg border-b-4 border-emerald-800 active:translate-y-1">🖨️ PDF</button>
             </div>
             
+            <div class="flex flex-col gap-1">
+                <span class="text-[9px] font-black text-indigo-300 uppercase ml-1">Quantidade de Peças:</span>
+                <div class="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
+                    <button onclick="filtrarQtd('exato', 1, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">1</button>
+                    <button onclick="filtrarQtd('min', 1, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">1+</button>
+                    <button onclick="filtrarQtd('min', 2, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">2+</button>
+                    <button onclick="filtrarQtd('min', 4, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">4+</button>
+                    <button onclick="filtrarQtd('min', 6, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">6+</button>
+                    <button onclick="filtrarQtd('min', 8, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">8+</button>
+                    <button onclick="filtrarQtd('min', 10, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">10+</button>
+                    <button onclick="filtrarQtd('min', 12, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">12+</button>
+                </div>
+            </div>
+
             <div class="flex gap-2">
-                <button onclick="filtrarAno('24', this)" class="btn-ano flex-1 py-2 rounded-lg text-xs font-black uppercase shadow-md">2024</button>
-                <button onclick="filtrarAno('25', this)" class="btn-ano flex-1 py-2 rounded-lg text-xs font-black uppercase shadow-md">2025</button>
-                <button onclick="filtrarAno('26', this)" class="btn-ano flex-1 py-2 rounded-lg text-xs font-black uppercase shadow-md">2026</button>
-                <button onclick="limparFiltros()" class="bg-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase text-slate-100">LIMPAR</button>
+                <button onclick="filtrarAno('24', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2024</button>
+                <button onclick="filtrarAno('25', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2025</button>
+                <button onclick="filtrarAno('26', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2026</button>
+                <button onclick="limparFiltros()" class="bg-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase shadow-md active:translate-y-1">LIMPAR</button>
             </div>
         </div>
     </header>
 
-    <div class="overflow-x-auto shadow-2xl bg-white no-print">
+    <div class="overflow-x-auto bg-white no-print">
         <table class="min-w-full border-collapse">
             <thead>
                 <tr>
@@ -104,24 +115,12 @@
     </div>
 
     <div id="printArea" class="hidden p-6">
-        <div class="flex justify-between items-end border-b-4 border-black pb-2 mb-4">
-            <div>
-                <h1 class="text-xl font-black uppercase italic">ACA - LISTA DE REPOSIÇÃO (A-Z)</h1>
-                <p id="printInfo" class="text-[10px] font-bold uppercase"></p>
-            </div>
-            <div class="text-right text-[9px] font-bold">
-                GERADO EM: <span id="printDate"></span>
-            </div>
-        </div>
-        <table class="w-full border-collapse">
+        <h1 class="text-xl font-black border-b-4 border-black pb-1 mb-3 italic uppercase">ACA - Lista de Reposição</h1>
+        <p id="printInfo" class="text-[10px] mb-2 font-bold uppercase"></p>
+        <table class="w-full">
             <thead>
-                <tr class="bg-gray-100">
-                    <th class="text-left p-1">NCE</th>
-                    <th class="text-left p-1">DESCRIÇÃO</th>
-                    <th class="text-center p-1">DEP.</th>
-                    <th class="text-center p-1">LOJA</th>
-                    <th class="text-center p-1">TOTAL</th>
-                    <th class="text-center p-1 w-10">VISTO</th>
+                <tr class="bg-gray-100 font-bold uppercase text-[9px]">
+                    <th>NCE</th><th>Descrição</th><th>Dep.</th><th>Loja</th><th>Total</th><th>OK</th>
                 </tr>
             </thead>
             <tbody id="printTableBody"></tbody>
@@ -143,6 +142,8 @@
 
         let dadosEstoque = [];
         let anoAtivo = null;
+        let qtdMinima = 0;
+        let tipoFiltroQtd = 'min'; // 'min' ou 'exato'
 
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const reader = new FileReader();
@@ -160,14 +161,12 @@
                             const t = parseInt(Math.floor(parseFloat(matches[2])));
                             const u = parseFloat(matches[3]);
                             const desc = line.substring(line.indexOf(nce)+nce.length, line.indexOf(matches[0])).trim();
-                            let alerta = (t > 1) && (l < (t * 0.7)) && (d > 0);
+                            let alerta = (t > 0) && (l < (t * 0.7)) && (d > 0);
                             temporario.push({ nce, desc, dep: d, loja: l, total: t, unitario: u, subtotal: t*u, alerta });
                         }
                     }
                 });
-                if(confirm("Deseja salvar na nuvem?")) {
-                    db.ref('estoque_aca').set({ ultimaAtualizacao: new Date().toLocaleString(), itens: temporario });
-                }
+                db.ref('estoque_aca').set({ ultimaAtualizacao: new Date().toLocaleString(), itens: temporario });
             };
             reader.readAsText(e.target.files[0]);
         });
@@ -187,15 +186,18 @@
                 const textoCompleto = (item.desc + " " + item.nce).toLowerCase();
                 const matchBusca = termosBusca.every(termo => textoCompleto.includes(termo));
                 const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
-                return matchBusca && matchAno;
+                
+                let matchQtd = true;
+                if (tipoFiltroQtd === 'exato') {
+                    matchQtd = item.total === qtdMinima;
+                } else {
+                    matchQtd = item.total >= qtdMinima;
+                }
+                
+                return matchBusca && matchAno && matchQtd;
             });
 
-            // Tela principal mantém ordem: Alerta -> Maior Volume
-            filtrados.sort((a, b) => {
-                if (a.alerta !== b.alerta) return b.alerta - a.alerta;
-                return b.total - a.total;
-            });
-
+            filtrados.sort((a, b) => (b.alerta - a.alerta) || (b.total - a.total));
             atualizarDashboard(filtrados);
             renderTable(filtrados);
         }
@@ -222,19 +224,23 @@
             lista.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = item.alerta ? "row-alert border-b" : "border-b";
-                tr.innerHTML = `
-                    <td class="px-4 py-4 font-bold text-indigo-900">${item.nce}</td>
-                    <td class="py-4 uppercase text-[11px] font-bold leading-tight">${item.desc} ${item.alerta ? '<br><span class="badge-alert">REPOSIÇÃO</span>' : ''}</td>
-                    <td class="text-center font-bold text-slate-500">${item.dep}</td>
-                    <td class="text-center font-bold text-slate-900">${item.loja}</td>
-                    <td class="text-center bg-blue-50 text-xl font-black text-blue-900 border-x border-slate-100">${item.total}</td>
-                    <td class="px-4 text-right">
-                        <div class="font-bold text-slate-900">R$ ${item.unitario.toFixed(2)}</div>
-                        <div class="text-[9px] text-indigo-600 font-black">Sub: R$ ${item.subtotal.toFixed(2)}</div>
-                    </td>
-                `;
+                tr.innerHTML = `<td class="px-4 py-4 font-bold text-indigo-900">${item.nce}</td><td class="py-4 uppercase text-[11px] font-bold leading-tight">${item.desc} ${item.alerta ? '<br><span class="badge-alert">REPOSIÇÃO</span>' : ''}</td><td class="text-center font-bold text-slate-500">${item.dep}</td><td class="text-center font-bold text-slate-900">${item.loja}</td><td class="text-center bg-blue-50 text-xl font-black text-blue-900">${item.total}</td><td class="px-4 text-right"><div class="font-bold">R$ ${item.unitario.toFixed(2)}</div><div class="text-[9px] text-indigo-600 font-black">Sub: R$ ${item.subtotal.toFixed(2)}</div></td>`;
                 body.appendChild(tr);
             });
+        }
+
+        function filtrarQtd(tipo, valor, btn) {
+            document.querySelectorAll('.btn-qtd').forEach(b => b.classList.remove('btn-active'));
+            btn.classList.add('btn-active');
+            tipoFiltroQtd = tipo;
+            qtdMinima = valor; 
+            aplicarFiltros();
+        }
+
+        function filtrarAno(ano, btn) {
+            document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
+            btn.classList.add('btn-active');
+            anoAtivo = ano; aplicarFiltros();
         }
 
         function gerarRelatorioImpressao() {
@@ -245,44 +251,23 @@
                 const textoCompleto = (item.desc + " " + item.nce).toLowerCase();
                 const matchBusca = termosBusca.every(termo => textoCompleto.includes(termo));
                 const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
-                return item.alerta && matchBusca && matchAno;
-            });
+                let matchQtd = tipoFiltroQtd === 'exato' ? item.total === qtdMinima : item.total >= qtdMinima;
+                return item.alerta && matchBusca && matchAno && matchQtd;
+            }).sort((a, b) => a.desc.localeCompare(b.desc));
 
-            // NOVIDADE: ORDEM ALFABÉTICA (A-Z) NO PDF
-            listaRepor.sort((a, b) => a.desc.localeCompare(b.desc));
-
-            if(listaRepor.length === 0) return alert("Não há itens de reposição!");
-            
-            const pBody = document.getElementById('printTableBody');
-            pBody.innerHTML = '';
-            document.getElementById('printDate').textContent = new Date().toLocaleString();
-            document.getElementById('printInfo').textContent = `ORDEM ALFABÉTICA | TOTAL: ${listaRepor.length} ITENS`;
-            
+            if(listaRepor.length === 0) return alert("Nada para imprimir!");
+            document.getElementById('printTableBody').innerHTML = '';
+            document.getElementById('printInfo').textContent = `Filtro: ${tipoFiltroQtd === 'exato' ? 'Exatamente ' : ''}${qtdMinima}${tipoFiltroQtd === 'min' ? '+' : ''} peças | Total: ${listaRepor.length} itens`;
             listaRepor.forEach(i => {
-                pBody.innerHTML += `
-                    <tr>
-                        <td class="font-bold p-1 border border-black">${i.nce}</td>
-                        <td class="uppercase text-[9px] p-1 border border-black">${i.desc}</td>
-                        <td class="text-center font-bold p-1 border border-black">${i.dep}</td>
-                        <td class="text-center p-1 border border-black">${i.loja}</td>
-                        <td class="text-center font-black p-1 border border-black">${i.total}</td>
-                        <td class="border border-black"></td>
-                    </tr>`;
+                document.getElementById('printTableBody').innerHTML += `<tr><td class="font-bold border border-black p-1">${i.nce}</td><td class="uppercase text-[9px] border border-black p-1">${i.desc}</td><td class="text-center font-bold border border-black p-1">${i.dep}</td><td class="text-center border border-black p-1">${i.loja}</td><td class="text-center font-black border border-black p-1">${i.total}</td><td class="border border-black"></td></tr>`;
             });
             window.print();
         }
 
-        function filtrarAno(ano, btn) {
-            document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
-            btn.classList.add('btn-active');
-            anoAtivo = ano; aplicarFiltros();
-        }
-
         function limparFiltros() {
-            document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
-            anoAtivo = null; document.getElementById('searchInput').value = ''; aplicarFiltros();
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('btn-active'));
+            anoAtivo = null; qtdMinima = 0; tipoFiltroQtd = 'min'; document.getElementById('searchInput').value = ''; aplicarFiltros();
         }
-
         window.onload = monitorarNuvem;
     </script>
 </body>
