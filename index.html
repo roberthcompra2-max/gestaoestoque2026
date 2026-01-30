@@ -13,19 +13,18 @@
         .font-data { font-family: 'Roboto Mono', monospace; }
         thead th { position: sticky; top: 0; background-color: #1e1b4b; color: #fbbf24; z-index: 20; padding: 14px 8px; font-size: 11px; text-transform: uppercase; }
         .row-alert { background-color: #fff1f2 !important; border-left: 6px solid #e11d48; }
-        .badge-alert { background-color: #e11d48; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; display: inline-block; animation: pulse-soft 3s infinite; }
-        @keyframes pulse-soft { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
+        .row-negative { background-color: #eff6ff !important; border-left: 6px solid #2563eb; }
+        .badge-alert { background-color: #e11d48; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; display: inline-block; }
         .btn-filter { background-color: #2563eb; color: white; transition: all 0.2s; border-bottom: 3px solid #1e3a8a; }
-        .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; border-bottom: 3px solid #b45309 !important; font-weight: 900; transform: translateY(1px); }
+        .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; border-bottom: 3px solid #b45309 !important; font-weight: 900; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
         @media print {
+            @page { margin: 1cm; }
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
             #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-            .no-print { display: none !important; }
             table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid black !important; padding: 6px; font-size: 10px; }
+            th, td { border: 1px solid #000 !important; padding: 4px 6px; font-size: 10px; color: black !important; }
         }
     </style>
 </head>
@@ -35,7 +34,7 @@
         <div class="max-w-full mx-auto flex flex-col gap-3">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-xl font-black uppercase tracking-tighter text-amber-400 italic leading-none">Gestão ACA</h1>
+                    <h1 class="text-xl font-black uppercase tracking-tighter text-amber-400 italic">Gestão ACA</h1>
                     <p id="countLabel" class="text-[10px] font-bold text-indigo-300 uppercase mt-1">Sincronizado</p>
                 </div>
                 <label class="bg-amber-500 text-indigo-950 px-5 py-2 rounded-xl cursor-pointer font-black text-xs uppercase shadow-lg">
@@ -71,21 +70,19 @@
             </div>
             
             <div class="flex gap-2">
-                <input type="text" id="searchInput" oninput="aplicarFiltros()" placeholder="Busca inteligente..." class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white font-bold outline-none" />
-                <button onclick="gerarRelatorioImpressao()" class="bg-emerald-600 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg border-b-4 border-emerald-800 active:translate-y-1">🖨️ PDF</button>
+                <input type="text" id="searchInput" oninput="aplicarFiltros()" placeholder="Ex: camisa careca 25" class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white font-bold outline-none placeholder:text-indigo-300" />
+                <button onclick="gerarRelatorioImpressao()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg">🖨️ PDF TELA</button>
+                <button onclick="imprimirApenasReposicao()" class="bg-amber-500 text-indigo-950 px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg border-b-4 border-amber-700 active:border-0">🚨 REPOSIÇÃO</button>
             </div>
             
             <div class="flex flex-col gap-1">
-                <span class="text-[9px] font-black text-indigo-300 uppercase ml-1">Quantidade de Peças:</span>
                 <div class="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-                    <button onclick="filtrarQtd('exato', 1, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">1</button>
-                    <button onclick="filtrarQtd('min', 1, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">1+</button>
-                    <button onclick="filtrarQtd('min', 2, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">2+</button>
-                    <button onclick="filtrarQtd('min', 4, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">4+</button>
-                    <button onclick="filtrarQtd('min', 6, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">6+</button>
-                    <button onclick="filtrarQtd('min', 8, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">8+</button>
-                    <button onclick="filtrarQtd('min', 10, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">10+</button>
-                    <button onclick="filtrarQtd('min', 12, this)" class="btn-filter btn-qtd flex-1 min-w-[35px] py-1 rounded text-[10px] font-black">12+</button>
+                    <button onclick="filtrarQtd('min', 0, this)" class="btn-filter btn-qtd min-w-[55px] py-1 rounded text-[10px] font-black btn-active">TODOS</button>
+                    <button onclick="filtrarQtd('exato', 1, this)" class="btn-filter btn-qtd min-w-[85px] py-1 rounded text-[10px] font-black border-2 border-amber-400">PEÇA ÚNICA</button>
+                    <button onclick="filtrarQtd('min', 1, this)" class="btn-filter btn-qtd min-w-[35px] py-1 rounded text-[10px] font-black">1+</button>
+                    <button onclick="filtrarQtd('min', 2, this)" class="btn-filter btn-qtd min-w-[35px] py-1 rounded text-[10px] font-black">2+</button>
+                    <button onclick="filtrarQtd('min', 6, this)" class="btn-filter btn-qtd min-w-[35px] py-1 rounded text-[10px] font-black">6+</button>
+                    <button onclick="filtrarQtd('min', 12, this)" class="btn-filter btn-qtd min-w-[40px] py-1 rounded text-[10px] font-black">12+</button>
                 </div>
             </div>
 
@@ -93,7 +90,8 @@
                 <button onclick="filtrarAno('24', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2024</button>
                 <button onclick="filtrarAno('25', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2025</button>
                 <button onclick="filtrarAno('26', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2026</button>
-                <button onclick="limparFiltros()" class="bg-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase shadow-md active:translate-y-1">LIMPAR</button>
+                <button onclick="filtrarNegativos(this)" id="btnNeg" class="bg-indigo-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase text-white">NEGATIVOS</button>
+                <button onclick="limparFiltros()" class="bg-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase text-white">LIMPAR</button>
             </div>
         </div>
     </header>
@@ -114,9 +112,11 @@
         </table>
     </div>
 
-    <div id="printArea" class="hidden p-6">
-        <h1 class="text-xl font-black border-b-4 border-black pb-1 mb-3 italic uppercase">ACA - Lista de Reposição</h1>
-        <p id="printInfo" class="text-[10px] mb-2 font-bold uppercase"></p>
+    <div id="printArea" class="hidden">
+        <div class="p-4 border-b-4 border-black mb-4">
+            <h1 id="printTitle" class="text-xl font-black italic uppercase">RELATÓRIO</h1>
+            <p id="printInfo" class="text-[10px] font-bold uppercase"></p>
+        </div>
         <table class="w-full">
             <thead>
                 <tr class="bg-gray-100 font-bold uppercase text-[9px]">
@@ -142,8 +142,9 @@
 
         let dadosEstoque = [];
         let anoAtivo = null;
-        let qtdMinima = 0;
-        let tipoFiltroQtd = 'min'; // 'min' ou 'exato'
+        let qtdFiltro = 0;
+        let modoFiltro = 'min';
+        let apenasNegativos = false;
 
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const reader = new FileReader();
@@ -151,18 +152,23 @@
                 const lines = event.target.result.split('\n');
                 let temporario = [];
                 lines.forEach(line => {
-                    if (line.trim().startsWith('2') && line.includes('.00')) {
-                        const matches = line.match(/(-?\d+\.\d{2})/g);
-                        const partes = line.trim().split(/\s+/);
-                        const nce = partes[2];
-                        if (nce && matches && matches.length >= 4) {
-                            const d = parseInt(Math.floor(parseFloat(matches[0])));
-                            const l = parseInt(Math.floor(parseFloat(matches[1])));
-                            const t = parseInt(Math.floor(parseFloat(matches[2])));
-                            const u = parseFloat(matches[3]);
-                            const desc = line.substring(line.indexOf(nce)+nce.length, line.indexOf(matches[0])).trim();
-                            let alerta = (t > 0) && (l < (t * 0.7)) && (d > 0);
-                            temporario.push({ nce, desc, dep: d, loja: l, total: t, unitario: u, subtotal: t*u, alerta });
+                    const cleanLine = line.trim();
+                    if (cleanLine.startsWith('2') && cleanLine.includes('.00')) {
+                        const matches = cleanLine.match(/(-?\d+\.\d{2})/g);
+                        if (matches && matches.length >= 6) {
+                            const partes = cleanLine.split(/\s+/);
+                            const nce = partes[2].length > 2 ? partes[2] : partes[3];
+                            const vPrecoU = parseFloat(matches[matches.length - 3]);
+                            const qTotal  = Math.round(parseFloat(matches[matches.length - 4]));
+                            const qLoja   = Math.round(parseFloat(matches[matches.length - 5]));
+                            const qDep    = Math.round(parseFloat(matches[matches.length - 6]));
+                            const idxNce = cleanLine.indexOf(nce) + nce.length;
+                            const desc = cleanLine.substring(idxNce, cleanLine.indexOf(matches[matches.length - 6])).trim();
+
+                            if (!isNaN(qTotal)) {
+                                let alerta = (qTotal > 0) && (qLoja < (qTotal * 0.7)) && (qDep > 0);
+                                temporario.push({ nce, desc, dep: qDep, loja: qLoja, total: qTotal, unitario: vPrecoU, subtotal: qTotal * vPrecoU, alerta });
+                            }
                         }
                     }
                 });
@@ -179,52 +185,63 @@
         }
 
         function aplicarFiltros() {
-            const valorBusca = document.getElementById('searchInput').value.toLowerCase().trim();
-            const termosBusca = valorBusca.split(" ").filter(t => t.length > 0);
-            
+            const buscaInput = document.getElementById('searchInput').value.toLowerCase();
+            const termosBusca = buscaInput.split(' ').filter(t => t.length > 0);
+
             let filtrados = dadosEstoque.filter(item => {
-                const textoCompleto = (item.desc + " " + item.nce).toLowerCase();
-                const matchBusca = termosBusca.every(termo => textoCompleto.includes(termo));
+                const textoItem = (item.desc + " " + item.nce).toLowerCase();
+                const matchBusca = termosBusca.every(termo => textoItem.includes(termo));
                 const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
                 
-                let matchQtd = true;
-                if (tipoFiltroQtd === 'exato') {
-                    matchQtd = item.total === qtdMinima;
+                let matchQtd;
+                if (apenasNegativos) {
+                    matchQtd = (item.loja < 0 || item.dep < 0);
                 } else {
-                    matchQtd = item.total >= qtdMinima;
+                    matchQtd = (modoFiltro === 'exato') ? (item.total === qtdFiltro) : (item.total >= qtdFiltro);
                 }
-                
                 return matchBusca && matchAno && matchQtd;
             });
 
-            filtrados.sort((a, b) => (b.alerta - a.alerta) || (b.total - a.total));
+            if (!apenasNegativos) filtrados.sort((a,b) => (b.alerta - a.alerta) || (b.total - a.total));
+            else filtrados.sort((a,b) => a.desc.localeCompare(b.desc));
+            
             atualizarDashboard(filtrados);
             renderTable(filtrados);
         }
 
         function atualizarDashboard(lista) {
-            let sL = 0, sD = 0, sT = 0, sF = 0;
-            lista.forEach(i => { sL += i.loja; sD += i.dep; sT += i.total; sF += i.subtotal; });
-            if (sT > 0) {
-                document.getElementById('statsContainer').classList.remove('hidden');
-                document.getElementById('barLoja').style.width = ((sL/sT)*100) + "%";
-                document.getElementById('barDep').style.width = ((sD/sT)*100) + "%";
-                document.getElementById('percentLabel').textContent = ((sL/sT)*100).toFixed(1) + "% NA LOJA";
-                document.getElementById('txtTotalPeças').textContent = sT.toLocaleString();
-                document.getElementById('txtLojaPeças').textContent = sL.toLocaleString();
-                document.getElementById('txtDepPeças').textContent = sD.toLocaleString();
-                document.getElementById('txtValorTotal').textContent = sF.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            }
-            document.getElementById('countLabel').textContent = `🚨 ${lista.filter(x=>x.alerta).length} ALERTAS | 📦 ${lista.length} ITENS`;
+            let sL=0, sD=0, sT=0, sF=0;
+            lista.forEach(i => { sL+=i.loja; sD+=i.dep; sT+=i.total; sF+=i.subtotal; });
+            document.getElementById('statsContainer').classList.remove('hidden');
+            const ratio = sT !== 0 ? ((sL/sT)*100) : 0;
+            document.getElementById('barLoja').style.width = ratio + "%";
+            document.getElementById('barDep').style.width = (100-ratio) + "%";
+            document.getElementById('percentLabel').textContent = ratio.toFixed(1) + "% NA LOJA";
+            document.getElementById('txtTotalPeças').textContent = sT.toLocaleString();
+            document.getElementById('txtLojaPeças').textContent = sL.toLocaleString();
+            document.getElementById('txtDepPeças').textContent = sD.toLocaleString();
+            document.getElementById('txtValorTotal').textContent = sF.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+            document.getElementById('countLabel').textContent = `📦 ${lista.length} ITENS FILTRADOS`;
         }
 
         function renderTable(lista) {
-            const body = document.getElementById('tableBody');
-            body.innerHTML = '';
-            lista.forEach(item => {
+            const body = document.getElementById('tableBody'); body.innerHTML = '';
+            lista.forEach(i => {
                 const tr = document.createElement('tr');
-                tr.className = item.alerta ? "row-alert border-b" : "border-b";
-                tr.innerHTML = `<td class="px-4 py-4 font-bold text-indigo-900">${item.nce}</td><td class="py-4 uppercase text-[11px] font-bold leading-tight">${item.desc} ${item.alerta ? '<br><span class="badge-alert">REPOSIÇÃO</span>' : ''}</td><td class="text-center font-bold text-slate-500">${item.dep}</td><td class="text-center font-bold text-slate-900">${item.loja}</td><td class="text-center bg-blue-50 text-xl font-black text-blue-900">${item.total}</td><td class="px-4 text-right"><div class="font-bold">R$ ${item.unitario.toFixed(2)}</div><div class="text-[9px] text-indigo-600 font-black">Sub: R$ ${item.subtotal.toFixed(2)}</div></td>`;
+                tr.className = apenasNegativos ? "row-negative border-b" : (i.alerta ? "row-alert border-b" : "border-b");
+                tr.innerHTML = `
+                    <td class="px-4 py-4 font-bold text-indigo-900">${i.nce}</td>
+                    <td class="py-4 uppercase text-[11px] font-bold">
+                        ${i.desc} 
+                        ${i.alerta && !apenasNegativos ? '<br><span class="badge-alert">REPOSIÇÃO</span>' : ''}
+                    </td>
+                    <td class="text-center font-bold">${i.dep}</td>
+                    <td class="text-center font-bold">${i.loja}</td>
+                    <td class="text-center bg-blue-50 text-xl font-black text-blue-900">${i.total}</td>
+                    <td class="px-4 text-right">
+                        <div class="font-black text-indigo-950 text-base leading-none">R$ ${i.unitario.toFixed(2)}</div>
+                        <div class="text-[9px] text-slate-400 font-bold uppercase mt-1">Sub: R$ ${i.subtotal.toFixed(2)}</div>
+                    </td>`;
                 body.appendChild(tr);
             });
         }
@@ -232,41 +249,101 @@
         function filtrarQtd(tipo, valor, btn) {
             document.querySelectorAll('.btn-qtd').forEach(b => b.classList.remove('btn-active'));
             btn.classList.add('btn-active');
-            tipoFiltroQtd = tipo;
-            qtdMinima = valor; 
+            modoFiltro = tipo;
+            qtdFiltro = valor; 
+            apenasNegativos = false; 
             aplicarFiltros();
         }
 
         function filtrarAno(ano, btn) {
+            const jaEstavaAtivo = (anoAtivo === ano);
             document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
-            btn.classList.add('btn-active');
-            anoAtivo = ano; aplicarFiltros();
+            if (!jaEstavaAtivo) {
+                anoAtivo = ano;
+                btn.classList.add('btn-active');
+            } else {
+                anoAtivo = null;
+            }
+            aplicarFiltros();
         }
 
-        function gerarRelatorioImpressao() {
-            const valorBusca = document.getElementById('searchInput').value.toLowerCase().trim();
-            const termosBusca = valorBusca.split(" ").filter(t => t.length > 0);
-            
-            const listaRepor = dadosEstoque.filter(item => {
-                const textoCompleto = (item.desc + " " + item.nce).toLowerCase();
-                const matchBusca = termosBusca.every(termo => textoCompleto.includes(termo));
-                const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
-                let matchQtd = tipoFiltroQtd === 'exato' ? item.total === qtdMinima : item.total >= qtdMinima;
-                return item.alerta && matchBusca && matchAno && matchQtd;
-            }).sort((a, b) => a.desc.localeCompare(b.desc));
+        function filtrarNegativos(btn) {
+            apenasNegativos = !apenasNegativos;
+            btn.classList.toggle('btn-active', apenasNegativos);
+            aplicarFiltros();
+        }
 
-            if(listaRepor.length === 0) return alert("Nada para imprimir!");
-            document.getElementById('printTableBody').innerHTML = '';
-            document.getElementById('printInfo').textContent = `Filtro: ${tipoFiltroQtd === 'exato' ? 'Exatamente ' : ''}${qtdMinima}${tipoFiltroQtd === 'min' ? '+' : ''} peças | Total: ${listaRepor.length} itens`;
-            listaRepor.forEach(i => {
-                document.getElementById('printTableBody').innerHTML += `<tr><td class="font-bold border border-black p-1">${i.nce}</td><td class="uppercase text-[9px] border border-black p-1">${i.desc}</td><td class="text-center font-bold border border-black p-1">${i.dep}</td><td class="text-center border border-black p-1">${i.loja}</td><td class="text-center font-black border border-black p-1">${i.total}</td><td class="border border-black"></td></tr>`;
+        function limparFiltros() {
+            anoAtivo = null; qtdFiltro = 0; modoFiltro = 'min'; apenasNegativos = false;
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('btn-active'));
+            document.querySelector('.btn-qtd').classList.add('btn-active');
+            document.getElementById('searchInput').value = '';
+            aplicarFiltros();
+        }
+
+        // FUNÇÃO PARA IMPRIMIR APENAS ITENS SINALIZADOS PARA REPOSIÇÃO
+        function imprimirApenasReposicao() {
+            const reposicao = dadosEstoque.filter(i => i.alerta === true).sort((a,b) => a.desc.localeCompare(b.desc));
+            
+            if(reposicao.length === 0) {
+                alert("Não há itens sinalizados para reposição no momento.");
+                return;
+            }
+
+            document.getElementById('printTitle').textContent = "ACA - LISTA DE REPOSIÇÃO (SINALIZADOS)";
+            document.getElementById('printInfo').textContent = `Total de itens para reposição: ${reposicao.length}`;
+            
+            const printBody = document.getElementById('printTableBody');
+            printBody.innerHTML = '';
+            reposicao.forEach(i => {
+                printBody.innerHTML += `
+                    <tr>
+                        <td class="text-center font-bold">${i.nce}</td>
+                        <td class="uppercase">${i.desc}</td>
+                        <td class="text-center">${i.dep}</td>
+                        <td class="text-center">${i.loja}</td>
+                        <td class="text-center font-bold">${i.total}</td>
+                        <td class="w-10 border border-black"></td>
+                    </tr>`;
             });
             window.print();
         }
 
-        function limparFiltros() {
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('btn-active'));
-            anoAtivo = null; qtdMinima = 0; tipoFiltroQtd = 'min'; document.getElementById('searchInput').value = ''; aplicarFiltros();
+        // FUNÇÃO QUE IMPRIME O QUE ESTÁ NA TELA (MANTIDA CONFORME SEU DESEJO)
+        function gerarRelatorioImpressao() {
+            const buscaInput = document.getElementById('searchInput').value.toLowerCase();
+            const termosBusca = buscaInput.split(' ').filter(t => t.length > 0);
+
+            const filtradosParaPrint = dadosEstoque.filter(item => {
+                const textoItem = (item.desc + " " + item.nce).toLowerCase();
+                const matchBusca = termosBusca.every(termo => textoItem.includes(termo));
+                const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
+                let matchQtd;
+                if (apenasNegativos) {
+                    matchQtd = (item.loja < 0 || item.dep < 0);
+                } else {
+                    matchQtd = (modoFiltro === 'exato') ? (item.total === qtdFiltro) : (item.total >= qtdFiltro);
+                }
+                return matchBusca && matchAno && matchQtd;
+            }).sort((a,b) => a.desc.localeCompare(b.desc));
+
+            document.getElementById('printTitle').textContent = apenasNegativos ? "PRODUTOS NEGATIVOS" : "RELATÓRIO DE ESTOQUE";
+            document.getElementById('printInfo').textContent = `Itens: ${filtradosParaPrint.length} | Filtro: ${modoFiltro} ${qtdFiltro}`;
+            
+            const printBody = document.getElementById('printTableBody');
+            printBody.innerHTML = '';
+            filtradosParaPrint.forEach(i => {
+                printBody.innerHTML += `
+                    <tr>
+                        <td class="text-center font-bold">${i.nce}</td>
+                        <td class="uppercase">${i.desc}</td>
+                        <td class="text-center">${i.dep}</td>
+                        <td class="text-center">${i.loja}</td>
+                        <td class="text-center font-bold">${i.total}</td>
+                        <td class="w-10 border border-black"></td>
+                    </tr>`;
+            });
+            window.print();
         }
         window.onload = monitorarNuvem;
     </script>
