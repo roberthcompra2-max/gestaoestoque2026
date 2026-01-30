@@ -11,123 +11,206 @@
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&family=Inter:wght@400;600;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; }
         .font-data { font-family: 'Roboto Mono', monospace; }
-        thead th { position: sticky; top: 0; background-color: #1e1b4b; color: #fbbf24; z-index: 20; padding: 14px 8px; font-size: 11px; text-transform: uppercase; }
+        
+        thead th { 
+            position: sticky; 
+            top: 0; 
+            background-color: #1e1b4b; 
+            color: #fbbf24; 
+            z-index: 40; 
+            padding: 12px 8px; 
+            font-size: 11px; 
+            text-transform: uppercase;
+            border-bottom: 2px solid #f59e0b;
+        }
+        
         .row-alert { background-color: #fff1f2 !important; border-left: 6px solid #e11d48; }
         .row-negative { background-color: #eff6ff !important; border-left: 6px solid #2563eb; }
         .badge-alert { background-color: #e11d48; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 900; display: inline-block; }
-        .btn-filter { background-color: #2563eb; color: white; transition: all 0.2s; border-bottom: 3px solid #1e3a8a; }
-        .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; border-bottom: 3px solid #b45309 !important; font-weight: 900; }
+        
+        .btn-filter { background-color: #2563eb; color: white; transition: all 0.2s; border-bottom: 2px solid #1e3a8a; }
+        .btn-red { background-color: #e11d48; color: white; transition: all 0.2s; border-bottom: 2px solid #9f1239; }
+        .btn-active { background-color: #fbbf24 !important; color: #1e1b4b !important; border-bottom: 2px solid #b45309 !important; font-weight: 900; }
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
         @media print {
-            @page { margin: 1cm; }
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #000 !important; padding: 4px 6px; font-size: 10px; color: black !important; }
+            @page { size: A4; margin: 1cm; }
+            html, body { background: #fff !important; overflow: visible !important; }
+            header, .no-print, #tableBody, thead, .overflow-x-auto, button, input, #loginScreen { display: none !important; }
+            #mainContent { display: block !important; }
+            
+            #printArea { display: block !important; width: 98% !important; margin: 0 auto !important; }
+            
+            .print-app-header { 
+                display: flex !important; 
+                justify-content: space-between; 
+                align-items: center; 
+                border-bottom: 2px solid #000;
+                padding-bottom: 5px;
+                margin-bottom: 10px;
+                color: black !important;
+            }
+
+            .print-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed; }
+            
+            .print-table thead { display: table-header-group !important; }
+            .print-table thead th { 
+                background-color: #f0f0f0 !important; 
+                color: #000 !important; 
+                border: 1px solid #000 !important; 
+                font-size: 9px !important; 
+                font-weight: bold !important;
+                padding: 6px 2px !important;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .print-table td { 
+                border: 1px solid #000 !important; 
+                font-size: 9px !important; 
+                padding: 4px 2px; 
+                color: #000 !important;
+                word-wrap: break-word;
+                overflow: hidden;
+            }
+            
+            tr { page-break-inside: avoid; }
         }
     </style>
 </head>
 <body class="bg-slate-100 pb-10">
 
-    <header class="bg-indigo-950 text-white p-4 sticky top-0 z-50 shadow-xl border-b-4 border-amber-500 no-print">
-        <div class="max-w-full mx-auto flex flex-col gap-3">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-xl font-black uppercase tracking-tighter text-amber-400 italic">Gestão ACA</h1>
-                    <p id="countLabel" class="text-[10px] font-bold text-indigo-300 uppercase mt-1">Sincronizado</p>
-                </div>
-                <label class="bg-amber-500 text-indigo-950 px-5 py-2 rounded-xl cursor-pointer font-black text-xs uppercase shadow-lg">
-                    ATUALIZAR TXT
-                    <input type="file" id="fileInput" accept=".txt" class="hidden" />
-                </label>
-            </div>
-
-            <div id="statsContainer" class="bg-black/20 p-3 rounded-2xl border border-white/10 hidden">
-                <div class="flex justify-between text-[10px] font-black uppercase mb-1">
-                    <span class="text-amber-400">Distribuição</span>
-                    <span id="percentLabel" class="text-emerald-400">0% na Loja</span>
-                </div>
-                <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden flex mb-3">
-                    <div id="barLoja" class="bg-emerald-500 h-full transition-all duration-700"></div>
-                    <div id="barDep" class="bg-amber-500 h-full transition-all duration-700"></div>
-                </div>
-                <div class="flex items-stretch gap-2 text-center">
-                    <div class="flex-1 bg-emerald-950/40 rounded-xl p-2 border border-emerald-800/30">
-                        <p class="text-[8px] text-emerald-400 font-black">LOJA</p>
-                        <p id="txtLojaPeças" class="text-sm font-bold">0</p>
-                    </div>
-                    <div class="flex-[2] bg-indigo-900/60 rounded-xl p-2 border border-indigo-700/50">
-                        <p class="text-[8px] text-indigo-300 font-black">TOTAL / VALOR</p>
-                        <p id="txtTotalPeças" class="text-sm font-black">0</p>
-                        <p id="txtValorTotal" class="text-xs font-black text-amber-400">R$ 0,00</p>
-                    </div>
-                    <div class="flex-1 bg-amber-950/40 rounded-xl p-2 border border-amber-800/30">
-                        <p class="text-[8px] text-amber-400 font-black">DEPÓSITO</p>
-                        <p id="txtDepPeças" class="text-sm font-bold">0</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex gap-2">
-                <input type="text" id="searchInput" oninput="aplicarFiltros()" placeholder="Ex: camisa careca 25" class="flex-1 p-3 rounded-xl bg-indigo-900/50 border border-indigo-800 text-white font-bold outline-none placeholder:text-indigo-300" />
-                <button onclick="gerarRelatorioImpressao()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg">🖨️ PDF TELA</button>
-                <button onclick="imprimirApenasReposicao()" class="bg-amber-500 text-indigo-950 px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg border-b-4 border-amber-700 active:border-0">🚨 REPOSIÇÃO</button>
-            </div>
-            
-            <div class="flex flex-col gap-1">
-                <div class="flex gap-1 overflow-x-auto pb-1 no-scrollbar">
-                    <button onclick="filtrarQtd('min', 0, this)" class="btn-filter btn-qtd min-w-[55px] py-1 rounded text-[10px] font-black btn-active">TODOS</button>
-                    <button onclick="filtrarQtd('exato', 1, this)" class="btn-filter btn-qtd min-w-[85px] py-1 rounded text-[10px] font-black border-2 border-amber-400">PEÇA ÚNICA</button>
-                    <button onclick="filtrarQtd('min', 1, this)" class="btn-filter btn-qtd min-w-[35px] py-1 rounded text-[10px] font-black">1+</button>
-                    <button onclick="filtrarQtd('min', 2, this)" class="btn-filter btn-qtd min-w-[35px] py-1 rounded text-[10px] font-black">2+</button>
-                    <button onclick="filtrarQtd('min', 6, this)" class="btn-filter btn-qtd min-w-[35px] py-1 rounded text-[10px] font-black">6+</button>
-                    <button onclick="filtrarQtd('min', 12, this)" class="btn-filter btn-qtd min-w-[40px] py-1 rounded text-[10px] font-black">12+</button>
-                </div>
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="filtrarAno('24', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2024</button>
-                <button onclick="filtrarAno('25', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2025</button>
-                <button onclick="filtrarAno('26', this)" class="btn-filter btn-ano flex-1 py-2 rounded-lg text-xs font-black">2026</button>
-                <button onclick="filtrarNegativos(this)" id="btnNeg" class="bg-indigo-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase text-white">NEGATIVOS</button>
-                <button onclick="limparFiltros()" class="bg-slate-600 px-4 py-2 rounded-lg text-[10px] font-black uppercase text-white">LIMPAR</button>
+    <div id="loginScreen" class="fixed inset-0 z-[100] bg-indigo-950 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm border-t-4 border-amber-500 text-center">
+            <h1 class="text-2xl font-black text-indigo-950 uppercase italic tracking-tighter mb-6">Gestão ACA</h1>
+            <div class="space-y-4">
+                <input type="text" id="userInput" placeholder="USUÁRIO" class="w-full p-3 bg-slate-100 rounded-lg border border-slate-200 font-bold outline-none focus:border-indigo-500 uppercase">
+                <input type="password" id="passInput" placeholder="SENHA" class="w-full p-3 bg-slate-100 rounded-lg border border-slate-200 font-bold outline-none focus:border-indigo-500 uppercase">
+                <button onclick="verificarLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition-all shadow-lg border-b-4 border-indigo-900 active:border-0 uppercase text-sm">Entrar</button>
+                <p id="loginError" class="text-red-500 text-[10px] font-bold uppercase hidden">Acesso Negado!</p>
             </div>
         </div>
-    </header>
-
-    <div class="overflow-x-auto bg-white no-print">
-        <table class="min-w-full border-collapse">
-            <thead>
-                <tr>
-                    <th class="text-left px-4">NCE</th>
-                    <th class="text-left">PRODUTO</th>
-                    <th class="text-center">DEP.</th>
-                    <th class="text-center">LOJA</th>
-                    <th class="text-center">TOTAL</th>
-                    <th class="text-right px-4">VALOR (SUB)</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody" class="text-slate-800 text-sm font-data"></tbody>
-        </table>
     </div>
 
-    <div id="printArea" class="hidden">
-        <div class="p-4 border-b-4 border-black mb-4">
-            <h1 id="printTitle" class="text-xl font-black italic uppercase">RELATÓRIO</h1>
-            <p id="printInfo" class="text-[10px] font-bold uppercase"></p>
+    <div id="mainContent" class="hidden">
+        <header class="bg-indigo-950 text-white p-3 sticky top-0 z-50 shadow-xl border-b-2 border-amber-500 no-print">
+            <div class="max-w-full mx-auto flex flex-col gap-2">
+                
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-lg font-black uppercase tracking-tighter text-amber-400 italic leading-none">Gestão ACA</h1>
+                        <p id="countLabel" class="text-[9px] font-bold text-indigo-300 uppercase bg-black/20 px-2 py-1 rounded">Sincronizado</p>
+                    </div>
+                    <label class="bg-amber-500 text-indigo-950 px-3 py-1.5 rounded-lg cursor-pointer font-black text-[10px] uppercase shadow-lg">
+                        ATUALIZAR ESTOQUE
+                        <input type="file" id="fileInput" accept=".txt" class="hidden" />
+                    </label>
+                </div>
+
+                <div id="statsContainer" class="bg-black/20 p-2 rounded-xl border border-white/10 hidden">
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 bg-emerald-950/40 rounded-lg p-1 border border-emerald-800/30 text-center">
+                            <p class="text-[7px] text-emerald-400 font-black uppercase">Loja</p>
+                            <p id="pctLoja" class="text-lg font-black text-white leading-tight">0%</p>
+                            <p id="txtLojaPeças" class="text-xs font-bold leading-tight">0</p>
+                        </div>
+                        <div class="flex-[2] bg-indigo-900/60 rounded-lg p-1 border border-indigo-700/50 text-center relative overflow-hidden">
+                            <div id="barLoja" class="absolute left-0 bottom-0 h-0.5 bg-emerald-500 transition-all duration-700"></div>
+                            <p class="text-[7px] text-indigo-300 font-black">TOTAL / VALOR</p>
+                            <div class="flex justify-center gap-2 items-baseline">
+                                <span id="txtTotalPeças" class="text-xs font-black">0</span>
+                                <span id="txtValorTotal" class="text-[9px] font-black text-amber-400">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <div class="flex-1 bg-amber-950/40 rounded-lg p-1 border border-amber-800/30 text-center">
+                            <p class="text-[7px] text-amber-400 font-black uppercase">Depósito</p>
+                            <p id="pctDep" class="text-lg font-black text-white leading-tight">0%</p>
+                            <p id="txtDepPeças" class="text-xs font-bold leading-tight">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <input type="text" id="searchInput" oninput="aplicarFiltros()" placeholder="Pesquisar produto ou NCE..." class="flex-1 p-2 rounded-lg bg-indigo-900/50 border border-indigo-800 text-white font-bold text-xs outline-none" />
+                    <button onclick="gerarRelatorioImpressao()" class="bg-indigo-600 text-white px-3 py-1 rounded-lg font-black text-[9px] uppercase">🖨️ PDF TELA</button>
+                    <button onclick="imprimirApenasReposicao()" class="bg-amber-500 text-indigo-950 px-3 py-1 rounded-lg font-black text-[9px] uppercase border-b-2 border-amber-700">🚨 REPOSIÇÃO</button>
+                </div>
+                
+                <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+                    <div class="flex gap-1 border-r border-white/10 pr-2">
+                        <button onclick="filtrarQtd('min', 0, this)" class="btn-filter btn-qtd px-2 py-1 rounded text-[9px] font-black btn-active">TODOS</button>
+                        <button onclick="filtrarQtd('min', 2, this)" class="btn-filter btn-qtd px-2 py-1 rounded text-[9px] font-black">2+</button>
+                        <button onclick="filtrarQtd('min', 6, this)" class="btn-filter btn-qtd px-2 py-1 rounded text-[9px] font-black">6+</button>
+                        <button onclick="filtrarQtd('min', 12, this)" class="btn-filter btn-qtd px-2 py-1 rounded text-[9px] font-black">12+</button>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="filtrarAno('24', this)" class="btn-filter btn-ano px-2 py-1 rounded text-[9px] font-black">2024</button>
+                        <button onclick="filtrarAno('25', this)" class="btn-filter btn-ano px-2 py-1 rounded text-[9px] font-black">2025</button>
+                        <button onclick="filtrarAno('26', this)" class="btn-filter btn-ano px-2 py-1 rounded text-[9px] font-black">2026</button>
+                        <button onclick="filtrarNegativos(this)" id="btnNeg" class="btn-red px-2 py-1 rounded text-[9px] font-black uppercase">NEGATIVOS</button>
+                        <button onclick="filtrarQtd('exato', 1, this)" class="btn-red btn-qtd px-2 py-1 rounded text-[9px] font-black uppercase">PEÇA ÚNICA</button>
+                        <button onclick="limparFiltros()" class="btn-red px-2 py-1 rounded text-[9px] font-black uppercase">LIMPAR</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="overflow-x-auto bg-white no-print">
+            <table class="min-w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="text-left px-4" style="width: 80px;">NCE</th>
+                        <th class="text-left">PRODUTO</th>
+                        <th class="text-center" style="width: 60px;">DEP.</th>
+                        <th class="text-center" style="width: 60px;">LOJA</th>
+                        <th class="text-center" style="width: 70px;">TOTAL</th>
+                        <th class="text-right px-4" style="width: 110px;">VALOR (SUB)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="text-slate-800 text-[11px] font-data"></tbody>
+            </table>
         </div>
-        <table class="w-full">
-            <thead>
-                <tr class="bg-gray-100 font-bold uppercase text-[9px]">
-                    <th>NCE</th><th>Descrição</th><th>Dep.</th><th>Loja</th><th>Total</th><th>OK</th>
-                </tr>
-            </thead>
-            <tbody id="printTableBody"></tbody>
-        </table>
+
+        <div id="printArea" class="hidden">
+            <div class="print-app-header">
+                <div>
+                    <h1 style="font-size: 16px; font-weight: 900; margin: 0;">GESTÃO ACA</h1>
+                    <p id="printTitle" style="font-size: 10px; margin: 0; font-weight: bold;"></p>
+                </div>
+                <div style="text-align: right;">
+                    <p id="printDate" style="font-size: 8px; margin: 0;"></p>
+                    <p id="printInfo" style="font-size: 8px; margin: 0; font-weight: bold;"></p>
+                </div>
+            </div>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th style="width: 13%;">NCE</th>
+                        <th style="width: 47%; text-align: left;">PRODUTO</th>
+                        <th style="width: 10%;">DEPÓSITO</th>
+                        <th style="width: 10%;">LOJA</th>
+                        <th style="width: 10%;">TOTAL</th>
+                        <th style="width: 10%;">OK</th>
+                    </tr>
+                </thead>
+                <tbody id="printTableBody"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        // FUNÇÃO DE LOGIN
+        function verificarLogin() {
+            const user = document.getElementById('userInput').value.toLowerCase();
+            const pass = document.getElementById('passInput').value.toLowerCase();
+            if (user === 'aca' && pass === 'aca') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        }
+
         const firebaseConfig = {
             apiKey: "AIzaSyDcaHwJbY9gT4QUi5S8xBYLAQZhBaqjPhg",
             authDomain: "gestaoestoque-85694.firebaseapp.com",
@@ -141,10 +224,7 @@
         const db = firebase.database();
 
         let dadosEstoque = [];
-        let anoAtivo = null;
-        let qtdFiltro = 0;
-        let modoFiltro = 'min';
-        let apenasNegativos = false;
+        let anoAtivo = null, qtdFiltro = 0, modoFiltro = 'min', apenasNegativos = false;
 
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const reader = new FileReader();
@@ -164,7 +244,6 @@
                             const qDep    = Math.round(parseFloat(matches[matches.length - 6]));
                             const idxNce = cleanLine.indexOf(nce) + nce.length;
                             const desc = cleanLine.substring(idxNce, cleanLine.indexOf(matches[matches.length - 6])).trim();
-
                             if (!isNaN(qTotal)) {
                                 let alerta = (qTotal > 0) && (qLoja < (qTotal * 0.7)) && (qDep > 0);
                                 temporario.push({ nce, desc, dep: qDep, loja: qLoja, total: qTotal, unitario: vPrecoU, subtotal: qTotal * vPrecoU, alerta });
@@ -184,44 +263,41 @@
             });
         }
 
-        function aplicarFiltros() {
+        function obterListaFiltrada() {
             const buscaInput = document.getElementById('searchInput').value.toLowerCase();
             const termosBusca = buscaInput.split(' ').filter(t => t.length > 0);
-
-            let filtrados = dadosEstoque.filter(item => {
+            return dadosEstoque.filter(item => {
                 const textoItem = (item.desc + " " + item.nce).toLowerCase();
                 const matchBusca = termosBusca.every(termo => textoItem.includes(termo));
                 const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
-                
-                let matchQtd;
-                if (apenasNegativos) {
-                    matchQtd = (item.loja < 0 || item.dep < 0);
-                } else {
-                    matchQtd = (modoFiltro === 'exato') ? (item.total === qtdFiltro) : (item.total >= qtdFiltro);
-                }
+                let matchQtd = apenasNegativos ? (item.loja < 0 || item.dep < 0) : (modoFiltro === 'exato' ? item.total === qtdFiltro : item.total >= qtdFiltro);
                 return matchBusca && matchAno && matchQtd;
             });
+        }
 
+        function aplicarFiltros() {
+            let filtrados = obterListaFiltrada();
             if (!apenasNegativos) filtrados.sort((a,b) => (b.alerta - a.alerta) || (b.total - a.total));
             else filtrados.sort((a,b) => a.desc.localeCompare(b.desc));
-            
             atualizarDashboard(filtrados);
             renderTable(filtrados);
         }
 
         function atualizarDashboard(lista) {
             let sL=0, sD=0, sT=0, sF=0;
-            lista.forEach(i => { sL+=i.loja; sD+=i.dep; sT+=i.total; sF+=i.subtotal; });
+            lista.forEach(i => { sL += i.loja; sD += i.dep; sT += i.total; sF += i.subtotal; });
             document.getElementById('statsContainer').classList.remove('hidden');
-            const ratio = sT !== 0 ? ((sL/sT)*100) : 0;
-            document.getElementById('barLoja').style.width = ratio + "%";
-            document.getElementById('barDep').style.width = (100-ratio) + "%";
-            document.getElementById('percentLabel').textContent = ratio.toFixed(1) + "% NA LOJA";
+            const totalAbs = Math.abs(sL) + Math.abs(sD);
+            const pL = totalAbs > 0 ? Math.round((Math.abs(sL) / totalAbs) * 100) : 0;
+            const pD = totalAbs > 0 ? Math.round((Math.abs(sD) / totalAbs) * 100) : 0;
+            document.getElementById('pctLoja').textContent = `${pL}%`;
+            document.getElementById('pctDep').textContent = `${pD}%`;
+            document.getElementById('barLoja').style.width = pL + "%";
             document.getElementById('txtTotalPeças').textContent = sT.toLocaleString();
             document.getElementById('txtLojaPeças').textContent = sL.toLocaleString();
             document.getElementById('txtDepPeças').textContent = sD.toLocaleString();
             document.getElementById('txtValorTotal').textContent = sF.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            document.getElementById('countLabel').textContent = `📦 ${lista.length} ITENS FILTRADOS`;
+            document.getElementById('countLabel').textContent = `${lista.length} ITENS FILTRADOS`;
         }
 
         function renderTable(lista) {
@@ -230,17 +306,16 @@
                 const tr = document.createElement('tr');
                 tr.className = apenasNegativos ? "row-negative border-b" : (i.alerta ? "row-alert border-b" : "border-b");
                 tr.innerHTML = `
-                    <td class="px-4 py-4 font-bold text-indigo-900">${i.nce}</td>
-                    <td class="py-4 uppercase text-[11px] font-bold">
-                        ${i.desc} 
-                        ${i.alerta && !apenasNegativos ? '<br><span class="badge-alert">REPOSIÇÃO</span>' : ''}
+                    <td class="px-4 py-3 font-bold text-indigo-900">${i.nce}</td>
+                    <td class="py-3 uppercase font-bold leading-tight">
+                        ${i.desc} ${i.alerta && !apenasNegativos ? '<br><span class="badge-alert">REPOSIÇÃO</span>' : ''}
                     </td>
                     <td class="text-center font-bold">${i.dep}</td>
                     <td class="text-center font-bold">${i.loja}</td>
-                    <td class="text-center bg-blue-50 text-xl font-black text-blue-900">${i.total}</td>
+                    <td class="text-center bg-blue-50 text-base font-black text-blue-900">${i.total}</td>
                     <td class="px-4 text-right">
-                        <div class="font-black text-indigo-950 text-base leading-none">R$ ${i.unitario.toFixed(2)}</div>
-                        <div class="text-[9px] text-slate-400 font-bold uppercase mt-1">Sub: R$ ${i.subtotal.toFixed(2)}</div>
+                        <div class="font-black text-indigo-950 leading-none text-xs">R$ ${i.unitario.toFixed(2)}</div>
+                        <div class="text-[8px] text-slate-400 font-bold uppercase mt-1 text-nowrap">Sub: R$ ${i.subtotal.toFixed(2)}</div>
                     </td>`;
                 body.appendChild(tr);
             });
@@ -249,21 +324,14 @@
         function filtrarQtd(tipo, valor, btn) {
             document.querySelectorAll('.btn-qtd').forEach(b => b.classList.remove('btn-active'));
             btn.classList.add('btn-active');
-            modoFiltro = tipo;
-            qtdFiltro = valor; 
-            apenasNegativos = false; 
-            aplicarFiltros();
+            modoFiltro = tipo; qtdFiltro = valor; apenasNegativos = false; aplicarFiltros();
         }
 
         function filtrarAno(ano, btn) {
-            const jaEstavaAtivo = (anoAtivo === ano);
+            const jaAtivo = (anoAtivo === ano);
             document.querySelectorAll('.btn-ano').forEach(b => b.classList.remove('btn-active'));
-            if (!jaEstavaAtivo) {
-                anoAtivo = ano;
-                btn.classList.add('btn-active');
-            } else {
-                anoAtivo = null;
-            }
+            anoAtivo = jaAtivo ? null : ano;
+            if(!jaAtivo) btn.classList.add('btn-active');
             aplicarFiltros();
         }
 
@@ -275,76 +343,45 @@
 
         function limparFiltros() {
             anoAtivo = null; qtdFiltro = 0; modoFiltro = 'min'; apenasNegativos = false;
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('btn-active'));
+            document.querySelectorAll('.btn-qtd, .btn-ano, #btnNeg').forEach(b => b.classList.remove('btn-active'));
             document.querySelector('.btn-qtd').classList.add('btn-active');
             document.getElementById('searchInput').value = '';
             aplicarFiltros();
         }
 
-        // FUNÇÃO PARA IMPRIMIR APENAS ITENS SINALIZADOS PARA REPOSIÇÃO
+        function prepararDadosImpressao(titulo, info, lista) {
+            document.getElementById('printTitle').textContent = titulo;
+            document.getElementById('printInfo').textContent = info;
+            document.getElementById('printDate').textContent = "DATA: " + new Date().toLocaleString();
+            const printBody = document.getElementById('printTableBody');
+            printBody.innerHTML = '';
+            lista.forEach(i => {
+                printBody.innerHTML += `
+                <tr>
+                    <td style="text-align:center; font-weight:bold;">${i.nce}</td>
+                    <td style="text-transform:uppercase;">${i.desc}</td>
+                    <td style="text-align:center;">${i.dep}</td>
+                    <td style="text-align:center;">${i.loja}</td>
+                    <td style="text-align:center; font-weight:bold;">${i.total}</td>
+                    <td></td>
+                </tr>`;
+            });
+            window.print();
+        }
+
         function imprimirApenasReposicao() {
-            const reposicao = dadosEstoque.filter(i => i.alerta === true).sort((a,b) => a.desc.localeCompare(b.desc));
-            
-            if(reposicao.length === 0) {
-                alert("Não há itens sinalizados para reposição no momento.");
-                return;
-            }
-
-            document.getElementById('printTitle').textContent = "ACA - LISTA DE REPOSIÇÃO (SINALIZADOS)";
-            document.getElementById('printInfo').textContent = `Total de itens para reposição: ${reposicao.length}`;
-            
-            const printBody = document.getElementById('printTableBody');
-            printBody.innerHTML = '';
-            reposicao.forEach(i => {
-                printBody.innerHTML += `
-                    <tr>
-                        <td class="text-center font-bold">${i.nce}</td>
-                        <td class="uppercase">${i.desc}</td>
-                        <td class="text-center">${i.dep}</td>
-                        <td class="text-center">${i.loja}</td>
-                        <td class="text-center font-bold">${i.total}</td>
-                        <td class="w-10 border border-black"></td>
-                    </tr>`;
-            });
-            window.print();
+            const listaBase = obterListaFiltrada();
+            const reposicao = listaBase.filter(item => item.alerta === true && item.total > 1).sort((a,b) => a.desc.localeCompare(b.desc));
+            if(reposicao.length === 0) return alert("Nenhum item.");
+            prepararDadosImpressao("RELATÓRIO DE REPOSIÇÃO", `Total: ${reposicao.length} itens`, reposicao);
         }
 
-        // FUNÇÃO QUE IMPRIME O QUE ESTÁ NA TELA (MANTIDA CONFORME SEU DESEJO)
         function gerarRelatorioImpressao() {
-            const buscaInput = document.getElementById('searchInput').value.toLowerCase();
-            const termosBusca = buscaInput.split(' ').filter(t => t.length > 0);
-
-            const filtradosParaPrint = dadosEstoque.filter(item => {
-                const textoItem = (item.desc + " " + item.nce).toLowerCase();
-                const matchBusca = termosBusca.every(termo => textoItem.includes(termo));
-                const matchAno = anoAtivo ? item.desc.includes('/' + anoAtivo) : true;
-                let matchQtd;
-                if (apenasNegativos) {
-                    matchQtd = (item.loja < 0 || item.dep < 0);
-                } else {
-                    matchQtd = (modoFiltro === 'exato') ? (item.total === qtdFiltro) : (item.total >= qtdFiltro);
-                }
-                return matchBusca && matchAno && matchQtd;
-            }).sort((a,b) => a.desc.localeCompare(b.desc));
-
-            document.getElementById('printTitle').textContent = apenasNegativos ? "PRODUTOS NEGATIVOS" : "RELATÓRIO DE ESTOQUE";
-            document.getElementById('printInfo').textContent = `Itens: ${filtradosParaPrint.length} | Filtro: ${modoFiltro} ${qtdFiltro}`;
-            
-            const printBody = document.getElementById('printTableBody');
-            printBody.innerHTML = '';
-            filtradosParaPrint.forEach(i => {
-                printBody.innerHTML += `
-                    <tr>
-                        <td class="text-center font-bold">${i.nce}</td>
-                        <td class="uppercase">${i.desc}</td>
-                        <td class="text-center">${i.dep}</td>
-                        <td class="text-center">${i.loja}</td>
-                        <td class="text-center font-bold">${i.total}</td>
-                        <td class="w-10 border border-black"></td>
-                    </tr>`;
-            });
-            window.print();
+            const filtradosParaPrint = obterListaFiltrada().sort((a,b) => a.desc.localeCompare(b.desc));
+            if(filtradosParaPrint.length === 0) return alert("Nada para imprimir.");
+            prepararDadosImpressao("ESTOQUE GERAL", `Total: ${filtradosParaPrint.length} itens`, filtradosParaPrint);
         }
+
         window.onload = monitorarNuvem;
     </script>
 </body>
