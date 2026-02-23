@@ -39,9 +39,7 @@
             html, body { background: #fff !important; overflow: visible !important; }
             header, .no-print, #tableBody, thead, .overflow-x-auto, button, input, #loginScreen { display: none !important; }
             #mainContent { display: block !important; }
-            
             #printArea { display: block !important; width: 98% !important; margin: 0 auto !important; }
-            
             .print-app-header { 
                 display: flex !important; 
                 justify-content: space-between; 
@@ -51,9 +49,7 @@
                 margin-bottom: 10px;
                 color: black !important;
             }
-
             .print-table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed; }
-            
             .print-table thead { display: table-header-group !important; }
             .print-table thead th { 
                 background-color: #f0f0f0 !important; 
@@ -64,7 +60,6 @@
                 padding: 6px 2px !important;
                 -webkit-print-color-adjust: exact;
             }
-            
             .print-table td { 
                 border: 1px solid #000 !important; 
                 font-size: 9px !important; 
@@ -73,7 +68,6 @@
                 word-wrap: break-word;
                 overflow: hidden;
             }
-            
             tr { page-break-inside: avoid; }
         }
     </style>
@@ -88,6 +82,9 @@
                 <input type="password" id="passInput" placeholder="SENHA" class="w-full p-3 bg-slate-100 rounded-lg border border-slate-200 font-bold outline-none focus:border-indigo-500 uppercase">
                 <button onclick="verificarLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition-all shadow-lg border-b-4 border-indigo-900 active:border-0 uppercase text-sm">Entrar</button>
                 <p id="loginError" class="text-red-500 text-[10px] font-bold uppercase hidden">Acesso Negado!</p>
+                <p class="mt-4 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                    Desenvolvido por Roberth Nascimento (ACA)
+                </p>
             </div>
         </div>
     </div>
@@ -95,7 +92,6 @@
     <div id="mainContent" class="hidden">
         <header class="bg-indigo-950 text-white p-3 sticky top-0 z-50 shadow-xl border-b-2 border-amber-500 no-print">
             <div class="max-w-full mx-auto flex flex-col gap-2">
-                
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
                         <h1 class="text-lg font-black uppercase tracking-tighter text-amber-400 italic leading-none">Gestão ACA</h1>
@@ -199,7 +195,21 @@
     </div>
 
     <script>
-        // FUNÇÃO DE LOGIN
+        // SEGURANÇA: Bloqueia botão direito e acessos ao código, mas permite Copiar, Colar e Imprimir
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.onkeydown = function(e) {
+            // PERMITIR: Ctrl+C (67), Ctrl+V (86), Ctrl+P (80), Ctrl+A (65), Ctrl+X (88)
+            if (e.ctrlKey && [67, 86, 80, 65, 88].includes(e.keyCode)) {
+                return true; 
+            }
+            // BLOQUEAR: F12, Ctrl+U, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+            if (e.keyCode == 123 || 
+                (e.ctrlKey && e.keyCode == 85) || 
+                (e.ctrlKey && e.shiftKey && [73, 74, 67].includes(e.keyCode))) {
+                return false;
+            }
+        };
+
         function verificarLogin() {
             const user = document.getElementById('userInput').value.toLowerCase();
             const pass = document.getElementById('passInput').value.toLowerCase();
